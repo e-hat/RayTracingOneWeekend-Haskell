@@ -37,7 +37,7 @@ len2 :: Vec3 -> Double
 len2 v = dot v v
 
 len :: Vec3 -> Double
-len v = sqrt $ len v
+len v = sqrt $ len2 v
 
 dot :: Vec3 -> Vec3 -> Double
 dot (Vec3 x1 y1 z1) (Vec3 x2 y2 z2) = x1 * x2 + y1 * y2 + z1 * z2
