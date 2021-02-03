@@ -23,8 +23,8 @@ lowerLeftCorner = Main.origin `subV` (shrink horizontal 2.0) `subV` (shrink vert
 lerp u v t =
     (scl u t) `addV` (scl v (1.0 - t))
 
-rayColor r = 
-    let unitDir = dir (direction r)
+rayColor (Ray _ direction)  = 
+    let unitDir = dir direction
         t = 0.5 * (y unitDir + 1.0)
     in lerp (Vec3 0.5 0.7 1.0) (Vec3 1.0 1.0 1.0) t
 
@@ -35,10 +35,10 @@ colorString (Vec3 r g b) =
     in (concat $ intersperse " " irgb) ++ "\n"
 
 pixel w h x y =
-    let r = fromIntegral x / (fromIntegral w - 1.0)
-        g = fromIntegral y / (fromIntegral h - 1.0)
-        b = 0.25
-    in colorString $ Vec3 r g b
+    let u = fromIntegral x / (fromIntegral w - 1.0)
+        v = fromIntegral y / (fromIntegral h - 1.0)
+        r = Ray Main.origin (lowerLeftCorner `addV` (scl horizontal u) `addV` (scl vertical v) `subV` Main.origin)
+    in colorString $ rayColor r
 
 header w h =
     "P3\n" ++
@@ -53,7 +53,7 @@ writeScanline w h y = do
 genImg w h = do
     let contentAsLinesIO = [writeScanline w h y | y <- [h - 1, h - 2..0]]
     contentAsLines <- (sequenceA contentAsLinesIO)
-    return $ foldl (++) (header w h) contentAsLines 
+    return $ (header w h) ++ foldr (++) "" contentAsLines 
 
 main = do
     img <- genImg imageWidth imageHeight
