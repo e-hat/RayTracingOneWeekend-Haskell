@@ -22,11 +22,11 @@ vertical = Vec3 0 viewportHeight 0
 lowerLeftCorner = Main.origin `subV` (shrink horizontal 2.0) `subV` (shrink vertical 2.0) `subV` (Vec3 0 0 focalLength)
 
 lerp u v t =
-    (scl u t) `addV` (scl v (1.0 - t))
+    u `scl` t `addV` (v `scl` (1.0 - t))
 
 rayColor (Ray _ direction)  = 
     let unitDir = dir direction
-        t = 0.5 * (y unitDir + 1.0)
+        t = 0.5 * (getY unitDir + 1.0)
     in lerp (Vec3 0.5 0.7 1.0) (Vec3 1.0 1.0 1.0) t
 
 colorString :: Vec3 -> String
@@ -49,11 +49,10 @@ header w h =
 
 writeScanline w h y = do
    putStr $ "Scanlines remaining: " ++ (show y) ++ "\n" 
-   return $ foldr (++) "" [pixel w h x y | x <- [0..w - 1]] 
+   return $ foldr (++) "" [pixel w h x y | x <- [0..w - 1]]
    
 genImg w h = do
-    let contentAsLinesIO = [writeScanline w h y | y <- [h - 1, h - 2..0]]
-    contentAsLines <- (sequenceA contentAsLinesIO)
+    contentAsLines <- sequenceA [writeScanline w h y | y <- [h - 1, h - 2..0]]
     return $ (header w h) ++ foldr (++) "" contentAsLines 
 
 main = do

@@ -5,8 +5,8 @@ module Ray
 
 import Vectors
 
-data Ray = Ray { origin :: Vec3
-               , direction  :: Vec3
+data Ray = Ray { getOrigin     :: Vec3
+               , getDirection  :: Vec3
                } deriving (Eq,Show)
 
 at :: Ray -> Double -> Vec3

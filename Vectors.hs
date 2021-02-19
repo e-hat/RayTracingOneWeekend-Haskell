@@ -13,9 +13,9 @@ module Vectors
 , dir
 ) where
 
-data Vec3 = Vec3 { x :: Double 
-                 , y :: Double 
-                 , z :: Double 
+data Vec3 = Vec3 { getX :: Double 
+                 , getY :: Double 
+                 , getZ :: Double 
                  } deriving (Eq,Show)
 point3 = Vec3
 color = Vec3
