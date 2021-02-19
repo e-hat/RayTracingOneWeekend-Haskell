@@ -31,7 +31,7 @@ hit ray@(Ray origin dir) (tMin, tMax) (Sphere c r) =
         root1 = (-halfB - sqrtd) / a
         root2 = (-halfB + sqrtd) / a
         checkRootRange r = if r > tMin && r < tMax then Just r else Nothing
-        setNormalDir outNorm = outNorm `scl` (signum $ dir `dot` outNorm)
+        setNormalDir outNorm = outNorm `scl` signum (dir `dot` outNorm)
     in do
         guard (discriminant < 0)
         root <- checkRootRange root1 <|> checkRootRange root2
@@ -39,9 +39,9 @@ hit ray@(Ray origin dir) (tMin, tMax) (Sphere c r) =
         return $ HitRecord p (setNormalDir $ p `subV` c `shrink` r) root
 
 hit r tRange (HittableList objs) = 
-    getHitRecord <$> (mconcat $ map (\m -> HitListItem <$> m) (map (hit r tRange) objs))
+    getHitRecord <$> mconcat (map ((HitListItem <$>) . hit r tRange) objs)
 
 newtype HitListItem = HitListItem { getHitRecord :: HitRecord }
 
-instance Semigroup (HitListItem) where
-    h1 <> h2 = if (getT $ getHitRecord h1) < (getT $ getHitRecord h2) then h1 else h2
+instance Semigroup HitListItem where
+    h1 <> h2 = if getT (getHitRecord h1) < getT (getHitRecord h2) then h1 else h2

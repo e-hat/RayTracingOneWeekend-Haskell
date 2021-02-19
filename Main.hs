@@ -19,7 +19,7 @@ focalLength = 1.0
 origin = Vec3 0 0 0
 horizontal = Vec3 viewportWidth 0 0
 vertical = Vec3 0 viewportHeight 0
-lowerLeftCorner = Main.origin `subV` (shrink horizontal 2.0) `subV` (shrink vertical 2.0) `subV` (Vec3 0 0 focalLength)
+lowerLeftCorner = Main.origin `subV` shrink horizontal 2.0 `subV` shrink vertical 2.0 `subV` Vec3 0 0 focalLength
 
 lerp u v t =
     u `scl` t `addV` (v `scl` (1.0 - t))
@@ -32,19 +32,20 @@ rayColor (Ray _ direction)  =
 colorString :: Vec3 -> String
 colorString (Vec3 r g b) = 
     let toEightBitString x = show $ floor $ 255.999 * x 
-        irgb = map (toEightBitString) [r,g,b]
-    in (concat $ intersperse " " irgb) ++ "\n"
+        irgb = map toEightBitString [r,g,b]
+    in unwords irgb ++ "\n"
 
+pixel :: (Integral a1, Integral a2, Integral a3, Integral a4) => a4 -> a2 -> a3 -> a1 -> String
 pixel w h x y =
     let u = fromIntegral x / (fromIntegral w - 1.0)
         v = fromIntegral y / (fromIntegral h - 1.0)
-        r = Ray Main.origin (lowerLeftCorner `addV` (scl horizontal u) `addV` (scl vertical v) `subV` Main.origin)
+        r = Ray Main.origin (lowerLeftCorner `addV` scl horizontal u `addV` scl vertical v `subV` Main.origin)
     in colorString $ rayColor r
 
 header w h =
     "P3\n" ++
-    (show w) ++ " " ++
-    (show h) ++
+    show w ++ " " ++
+    show h ++
     "\n255\n"
 
 writeScanline w h y = do
