@@ -13,6 +13,7 @@ import Control.Monad
 data Hittable = 
     Sphere Vec3 Double
   | HittableList [Hittable]
+  deriving Show
 
 data HitRecord = HitRecord { getP    :: Vec3 
                            , getNorm :: Vec3 
@@ -31,9 +32,9 @@ hit ray@(Ray origin dir) (tMin, tMax) (Sphere c r) =
         root1 = (-halfB - sqrtd) / a
         root2 = (-halfB + sqrtd) / a
         checkRootRange r = if r > tMin && r < tMax then Just r else Nothing
-        setNormalDir outNorm = outNorm `scl` signum (dir `dot` outNorm)
+        setNormalDir outNorm = outNorm `scl` signum (dir `dot` outNorm) `scl` (-1)
     in do
-        guard (discriminant < 0)
+        guard (discriminant >= 0)
         root <- checkRootRange root1 <|> checkRootRange root2
         let p = ray `at` root
         return $ HitRecord p (setNormalDir $ p `subV` c `shrink` r) root
