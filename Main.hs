@@ -21,9 +21,11 @@ horizontal = Vec3 viewportWidth 0 0
 vertical = Vec3 0 viewportHeight 0
 lowerLeftCorner = Main.origin `subV` shrink horizontal 2.0 `subV` shrink vertical 2.0 `subV` Vec3 0 0 focalLength
 
+lerp :: Vec3 -> Vec3 -> Double -> Vec3
 lerp u v t =
     u `scl` t `addV` (v `scl` (1.0 - t))
 
+rayColor :: Ray -> Vec3
 rayColor (Ray _ direction)  = 
     let unitDir = dir direction
         t = 0.5 * (getY unitDir + 1.0)
@@ -35,27 +37,31 @@ colorString (Vec3 r g b) =
         irgb = map toEightBitString [r,g,b]
     in unwords irgb ++ "\n"
 
-pixel :: (Integral a1, Integral a2, Integral a3, Integral a4) => a4 -> a2 -> a3 -> a1 -> String
+pixel :: Int -> Int -> Int -> Int -> String
 pixel w h x y =
     let u = fromIntegral x / (fromIntegral w - 1.0)
         v = fromIntegral y / (fromIntegral h - 1.0)
         r = Ray Main.origin (lowerLeftCorner `addV` scl horizontal u `addV` scl vertical v `subV` Main.origin)
     in colorString $ rayColor r
 
+header :: Int -> Int -> String
 header w h =
     "P3\n" ++
     show w ++ " " ++
     show h ++
     "\n255\n"
 
+writeScanline :: Int -> Int -> Int -> IO String
 writeScanline w h y = do
-   putStr $ "Scanlines remaining: " ++ (show y) ++ "\n" 
-   return $ foldr (++) "" [pixel w h x y | x <- [0..w - 1]]
+   putStr $ "Scanlines remaining: " ++ show y ++ "\n" 
+   return $ concat [pixel w h x y | x <- [0..w - 1]]
    
+genImg :: Int -> Int -> IO String
 genImg w h = do
     contentAsLines <- sequenceA [writeScanline w h y | y <- [h - 1, h - 2..0]]
-    return $ (header w h) ++ foldr (++) "" contentAsLines 
+    return $ header w h ++ concat contentAsLines 
 
+main :: IO ()
 main = do
     img <- genImg imageWidth imageHeight
     writeFile "output/output.ppm" img 
